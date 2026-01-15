@@ -7,6 +7,8 @@ class QLineEdit;
 class QDateEdit;
 class QCheckBox;
 class QDialogButtonBox;
+class QPushButton;
+class QLabel;
 
 #include "PhoneBookgui.h"
 
@@ -18,6 +20,8 @@ public:
 
 private slots:
     void onTryCreate();
+    void updateAutoEmail();
+    void useAutoEmail();
 
 private:
     PhoneBook* m_book;
@@ -27,6 +31,10 @@ private:
     QLineEdit* m_lastName;
 
     QLineEdit* m_email;
+    QLabel* m_autoEmailLabel;
+    QPushButton* m_btnAutoEmail;
+    std::string m_currentAutoEmail;
+
     QLineEdit* m_address;
 
     QLineEdit* m_workPhone;

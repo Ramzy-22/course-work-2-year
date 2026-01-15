@@ -1,4 +1,5 @@
 #include "editcontactdialog.h"
+#include "Checkersgui.h"
 
 #include <QFormLayout>
 #include <QVBoxLayout>
@@ -9,6 +10,8 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <QDate>
+#include <QPushButton>
+#include <QLabel>
 
 static std::string toStdTrimmed(const QString& s)
 {
@@ -49,6 +52,10 @@ EditContactDialog::EditContactDialog(PhoneBook* book, unsigned int id, QWidget* 
     m_lastName = new QLineEdit(this);
 
     m_email = new QLineEdit(this);
+    m_autoEmailLabel = new QLabel(this);
+    m_autoEmailLabel->setStyleSheet("color: #0066cc; font-style: italic;");
+    m_btnAutoEmail = new QPushButton("Use Auto-Generated Email", this);
+
     m_address = new QLineEdit(this);
 
     m_workPhone = new QLineEdit(this);
@@ -86,7 +93,13 @@ EditContactDialog::EditContactDialog(PhoneBook* book, unsigned int id, QWidget* 
     form->addRow("First name *", m_firstName);
     form->addRow("Middle name", m_middleName);
     form->addRow("Last name *", m_lastName);
-    form->addRow("Email *", m_email);
+
+    // Email section with auto-generation
+    auto* emailLayout = new QVBoxLayout();
+    emailLayout->addWidget(m_email);
+    emailLayout->addWidget(m_autoEmailLabel);
+    emailLayout->addWidget(m_btnAutoEmail);
+    form->addRow("Email *", emailLayout);
 
     form->addRow("Work phone", m_workPhone);
     form->addRow("Home phone", m_homePhone);
@@ -98,10 +111,43 @@ EditContactDialog::EditContactDialog(PhoneBook* book, unsigned int id, QWidget* 
     m_buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     root->addWidget(m_buttons);
 
+    // Connect signals for auto-email generation
+    connect(m_firstName, &QLineEdit::textChanged, this, &EditContactDialog::updateAutoEmail);
+    connect(m_lastName, &QLineEdit::textChanged, this, &EditContactDialog::updateAutoEmail);
+    connect(m_btnAutoEmail, &QPushButton::clicked, this, &EditContactDialog::useAutoEmail);
+
     connect(m_buttons, &QDialogButtonBox::accepted, this, &EditContactDialog::onTryUpdate);
     connect(m_buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
-    resize(520, 420);
+    resize(580, 500);
+
+    // Initialize auto-email display
+    updateAutoEmail();
+}
+
+void EditContactDialog::updateAutoEmail()
+{
+    std::string firstName = toStdTrimmed(m_firstName->text());
+    std::string lastName = toStdTrimmed(m_lastName->text());
+
+    if (isValidName(firstName) && isValidName(lastName)) {
+        std::string autoEmail = generateEmail(firstName, lastName);
+        m_autoEmailLabel->setText(QString("Auto-generated option: %1")
+                                      .arg(QString::fromStdString(autoEmail)));
+        m_btnAutoEmail->setEnabled(true);
+        m_currentAutoEmail = autoEmail;
+    } else {
+        m_autoEmailLabel->setText("");
+        m_btnAutoEmail->setEnabled(false);
+        m_currentAutoEmail.clear();
+    }
+}
+
+void EditContactDialog::useAutoEmail()
+{
+    if (!m_currentAutoEmail.empty()) {
+        m_email->setText(QString::fromStdString(m_currentAutoEmail));
+    }
 }
 
 void EditContactDialog::onTryUpdate()
@@ -131,6 +177,6 @@ void EditContactDialog::onTryUpdate()
         return;
     }
 
-    QMessageBox::information(this, "Success", "Update Successful.");
+    QMessageBox::information(this, "Success", "Contact updated successfully!");
     accept();
 }

@@ -4,10 +4,13 @@
 #include <QDialog>
 #include "PhoneBookgui.h"
 
+
 class QLineEdit;
 class QDateEdit;
 class QCheckBox;
 class QDialogButtonBox;
+class QPushButton;
+class QLabel;
 
 class EditContactDialog : public QDialog
 {
@@ -17,6 +20,8 @@ public:
 
 private slots:
     void onTryUpdate();
+    void updateAutoEmail();    // ADDED
+    void useAutoEmail();       // ADDED
 
 private:
     PhoneBook* m_book;
@@ -27,6 +32,10 @@ private:
     QLineEdit* m_lastName;
 
     QLineEdit* m_email;
+    QLabel* m_autoEmailLabel;
+    QPushButton* m_btnAutoEmail;
+    std::string m_currentAutoEmail;
+
     QLineEdit* m_address;
 
     QLineEdit* m_workPhone;

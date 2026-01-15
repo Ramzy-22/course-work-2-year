@@ -163,3 +163,27 @@ bool isValidEmail(const std::string& rawEmail) {
 
     return std::regex_match(email, pattern);
 }
+std::string generateEmail(const std::string& firstName, const std::string& lastName) {
+    if (firstName.empty() || lastName.empty()) {
+        return "";
+    }
+
+    std::string lowerLastName = lastName;
+    std::string firstLetter(1, firstName[0]);
+
+    std::transform(lowerLastName.begin(), lowerLastName.end(),
+                   lowerLastName.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+    std::transform(firstLetter.begin(), firstLetter.end(),
+                   firstLetter.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+
+    lowerLastName.erase(
+        std::remove_if(lowerLastName.begin(), lowerLastName.end(),
+                       [](char c) { return c == ' ' || c == '-'; }),
+        lowerLastName.end()
+        );
+
+    return lowerLastName + firstLetter + "@gmail";
+}
+
