@@ -188,5 +188,5 @@ std::string generateEmail(const std::string& firstName, const std::string& lastN
         lowerLastName.end()
     );
     
-    return lowerLastName + "." + firstLetter + "@phonebook.com";
+    return lowerLastName + firstLetter + "@gmail";
 }

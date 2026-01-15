@@ -41,7 +41,19 @@ void PhoneBook::contact_creation_menu()
         std::getline(std::cin, contact.lastName);
     }
 
-    // Email (required)
+    // Email - AUTO-GENERATED with option to customize
+std::string generatedEmail = generateEmail(contact.firstName, contact.lastName);
+std::cout << "\nAuto-generated EMAIL: " << generatedEmail << "\n";
+std::cout << "Press Enter to use this email, or type a custom email: ";
+
+std::getline(std::cin, contact.email);
+
+if (contact.email.empty()) {
+    // User pressed Enter - use auto-generated email
+    contact.email = generatedEmail;
+    std::cout << "Using auto-generated email: " << contact.email << "\n";
+} else {
+    // User entered custom email - validate it
     std::cout << "Enter EMAIL (required, username@domain): ";
     std::getline(std::cin, contact.email);
     while (!isValidEmail(contact.email)) {
@@ -49,7 +61,14 @@ void PhoneBook::contact_creation_menu()
             "Username and domain must contain only Latin letters and digits.\n";
         std::cout << "Enter EMAIL (required): ";
         std::getline(std::cin, contact.email);
+    
+        if (contact.email.empty()) {
+            contact.email = generatedEmail;
+            std::cout << "Using auto-generated email: " << contact.email << "\n";
+            break;
+        }
     }
+}
 
     // Main phone (required) → stored as numbers.number1 (work)
     // ... after you've already asked for firstName, lastName, email ...
