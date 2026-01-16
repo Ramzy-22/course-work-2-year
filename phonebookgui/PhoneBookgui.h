@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <unordered_map>
+#include "DatabaseManager.h"
 #include "Contactgui.h"
 
 class PhoneBook {
@@ -19,6 +20,7 @@ public:
 
 private: 
     std::string storageFile;
+    bool m_useDatabase;
 
 public:
     PhoneBook();
@@ -27,26 +29,19 @@ public:
 
     int get_index();
     void set_index(int index);
+    bool connectToDatabase(const QString& host = "localhost",
+                           int port = 5432,
+                           const QString& dbName = "phonebook_db",
+                           const QString& user = "postgres",
+                           const QString& password = "micheal1234");
+    bool isUsingDatabase() const { return m_useDatabase; }
+    void refreshCacheFromDatabase();  // Sync cache with database
 
 public:
     void set_storage_file(const std::string& filename);
     const std::string& get_storage_file() const;
     bool save_to_file(const std::string& filename = "") const;
     bool load_from_file(const std::string& filename = "");
-
-public:
-    void contact_creation_menu();
-    Contact contact_search_menu();
-    void edit_contact();
-    void delete_contact();
-    void contact_sort_menu();
-
-private:
-    void create_contact(Contact contact);
-    Contact search(char method, const std::string& value);
-    void edit_contact_fields(PhoneBook& book, unsigned int id);
-    void delete_contact_impl(PhoneBook& book, unsigned int id);
-    void list_sorted_contacts(char method);
 public:
     bool add_contact(const Contact& contact, std::string* error = nullptr);
     bool remove_contact(unsigned int id, std::string* error = nullptr);

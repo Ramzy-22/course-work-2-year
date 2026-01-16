@@ -25,6 +25,7 @@ private slots:
     void on_btnEdit_clicked();
     void on_btnDelete_clicked();
     void on_btnSort_clicked();
+    void on_btnMigration_clicked();
 
 private:
     Ui::MainWindow *ui;

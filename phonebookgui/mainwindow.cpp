@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "actionwindow.h"
+#include "migrationdialog.h"
 #include "createcontactdialog.h"
 #include "viewcontactsdialog.h"
 #include "deletecontactsdialog.h"
@@ -25,7 +26,6 @@ void MainWindow::on_btnCreate_clicked()
     CreateContactDialog dlg(&m_book, this);
     dlg.exec();
 }
-
 void MainWindow::on_btnView_clicked()
 {
     ViewContactsDialog dlg(&m_book, this);
@@ -56,5 +56,10 @@ void MainWindow::on_btnSort_clicked()
 {
     // Sorting is handled inside the View Contacts dialog.
     ViewContactsDialog dlg(&m_book, this);
+    dlg.exec();
+}
+void MainWindow::on_btnMigration_clicked()
+{
+    MigrationDialog dlg(this);
     dlg.exec();
 }

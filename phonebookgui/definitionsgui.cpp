@@ -1,16 +1,75 @@
 #include "PhoneBookgui.h"
 #include "Checkersgui.h"
+#include "DatabaseManager.h"
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMessageBox>
 
 
 PhoneBook::PhoneBook() : index(0), storageFile("phonebook.db")
 {
-    // Best-effort load: if the file does not exist or is invalid,
-    // the phone book starts empty.
-    (void)load_from_file();
+    if (connectToDatabase()) {
+        qDebug() << "Using PostgreSQL database";
+        refreshCacheFromDatabase();
+    } else {
+        qDebug() << "Falling back to JSON file storage";
+        (void)load_from_file();
+    }
+}
+bool PhoneBook::connectToDatabase(const QString& host, int port,
+                                  const QString& dbName,
+                                  const QString& user,
+                                  const QString& password)
+{
+    QString pass = password;
+    if (pass.isEmpty()) {
+        // Try to read from config file or environment
+        // For now, prompt user (in GUI version)
+        // Or use hardcoded for testing
+        pass = "micheal1234";
+    }
+
+    if (DatabaseManager::instance().connect(host, port, dbName, user, pass)) {
+        m_useDatabase = true;
+        return true;
+    }
+
+    m_useDatabase = false;
+    return false;
+}
+void PhoneBook::refreshCacheFromDatabase()
+{
+    if (!m_useDatabase) return;
+
+    mainStorage.clear();
+    firstNameIndex.clear();
+    lastNameIndex.clear();
+    phoneWorkIndex.clear();
+    phoneHomeIndex.clear();
+    phoneOfficeIndex.clear();
+    emailIndex.clear();
+
+    auto contacts = DatabaseManager::instance().getAllContacts();
+
+    unsigned int maxId = 0;
+    for (const auto& pair : contacts) {
+        unsigned int id = pair.first;
+        const Contact& c = pair.second;
+
+        mainStorage[id] = c;
+        maxId = std::max(maxId, id);
+
+        if (!c.firstName.empty()) firstNameIndex[c.firstName] = id;
+        if (!c.lastName.empty()) lastNameIndex[c.lastName] = id;
+        if (!c.numbers.number1.empty()) phoneWorkIndex[c.numbers.number1] = id;
+        if (!c.numbers.number2.empty()) phoneHomeIndex[c.numbers.number2] = id;
+        if (!c.numbers.number3.empty()) phoneOfficeIndex[c.numbers.number3] = id;
+        if (!c.email.empty()) emailIndex[c.email] = id;
+    }
+
+    index = maxId;
 }
 
 PhoneBook::PhoneBook(const PhoneBook& other) = default;
@@ -177,7 +236,25 @@ bool PhoneBook::add_contact(const Contact& contact, std::string* error)
 
     if (!contact.birthday.empty() && !isValidBirthday(contact.birthday))
         return fail("Invalid birthday (must be dd-mm-yyyy and in the past).");
+    if (m_useDatabase) {
+        unsigned int newId = 0;
+        if (!DatabaseManager::instance().createContact(contact, &newId)) {
+            return fail(DatabaseManager::instance().lastError().toStdString());
+        }
 
+        // Update cache
+        mainStorage[newId] = contact;
+        firstNameIndex[contact.firstName] = newId;
+        lastNameIndex[contact.lastName] = newId;
+        emailIndex[contact.email] = newId;
+
+        if (!contact.numbers.number1.empty()) phoneWorkIndex[contact.numbers.number1] = newId;
+        if (!contact.numbers.number2.empty()) phoneHomeIndex[contact.numbers.number2] = newId;
+        if (!contact.numbers.number3.empty()) phoneOfficeIndex[contact.numbers.number3] = newId;
+
+        index = std::max(index, newId);
+        return true;
+    }
     // Store + indices
     const unsigned int newId = ++index;
     mainStorage[newId] = contact;
