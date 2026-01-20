@@ -159,7 +159,7 @@ bool isValidEmail(const std::string& rawEmail) {
     }
 
     // Note: dot in domain must be a literal '.' (escaped).
-    static const std::regex pattern(R"(^[A-Za-z0-9]+@[A-Za-z0-9]+$)");
+    static const std::regex pattern(R"(^[A-Za-z0-9]+@[A-Za-z0-9]+\.[A-Za-z0-9]+$)");
 
     return std::regex_match(email, pattern);
 }
