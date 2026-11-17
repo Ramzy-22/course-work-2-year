@@ -1,0 +1,27 @@
+# Build output
+build/
+build-*/
+*.exe
+*.o
+*.obj
+*.dll
+*.pdb
+Makefile
+.qmake.stash
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+
+# Local Qt Creator and editor settings
+*.pro.user*
+.vscode/
+.idea/
+
+# Local contact data and credentials (already tracked files remain tracked)
+*.db
+.env
+.env.*
+
+# Operating system files
+.DS_Store
+Thumbs.db

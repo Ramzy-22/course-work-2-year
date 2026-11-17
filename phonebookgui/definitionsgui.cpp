@@ -25,10 +25,7 @@ bool PhoneBook::connectToDatabase(const QString& host, int port,
 {
     QString pass = password;
     if (pass.isEmpty()) {
-        // Try to read from config file or environment
-        // For now, prompt user (in GUI version)
-        // Or use hardcoded for testing
-        pass = "micheal1234";
+        pass = qEnvironmentVariable("PHONEBOOK_DB_PASSWORD");
     }
 
     if (DatabaseManager::instance().connect(host, port, dbName, user, pass)) {
